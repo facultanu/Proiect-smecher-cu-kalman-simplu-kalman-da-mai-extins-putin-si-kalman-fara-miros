@@ -5,7 +5,7 @@ FixedPointPrecision = fixdt(1, 32, 20);
 
 % 1. Define Model (From your code)
 dt = 0.02;
-StopTime = 10;
+T = 10;
 
 ampli = 0.1;
 
@@ -15,7 +15,7 @@ H = single(diag([1,1,0,0]));
 Q = single(0.1 * eye(4));
 R = single(diag([1, 1, ampli, ampli]));
 
-time = single(0:dt:StopTime);
+time = single(0:dt:T);
 
 x = [0;0;0;0];
 u = single(ones(2, size(time, 2))');
@@ -29,6 +29,7 @@ z = x + ampli * randn(4, size(time,2));
 z = H*z;
 z=z';
 
+function C,T = precompute_taylor_inverse(H, R)
 % Precompute constant matrices for Taylor-based inverse approximation
 
 m = size(H,1);
@@ -40,19 +41,15 @@ n = size(H,2);
 C = inv(H*H' + R);
 
 % Precompute CHE_{u,l}H^TC tensors
-
-k = 0;
-for ui = 1:n
-    for li = 1:n
-        k = k + 1;
-
-        E = zeros(n,n);
-        E(ui,li) = 1;
-
-        Ti = C * H * E * H' * C;
-
-        % Create variables T1, T2, ..., T16 in the workspace
-        assignin('base', sprintf('T%d', k), Ti);
+T = cell(n,n);
+E = zeros(n);
+for u = 1:n
+   
+    for l = 1:n
+        E(u,l) = 1;
+        T{u,l} = C * H * E * H' * C;
     end
 end
+end
 
+C,T = precompute_taylor_inverse(H, R);
