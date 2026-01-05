@@ -49,10 +49,19 @@ for ui = 1:n
         E = zeros(n,n);
         E(ui,li) = 1;
 
-        Ti = C * H * E * H' * C;
+        Ti = fi(C * H * E * H' * C, true, 32, 20);
 
         % Create variables T1, T2, ..., T16 in the workspace
         assignin('base', sprintf('T%d', k), Ti);
     end
 end
+
+% convert inputs to fixed point
+F = fi(F, true, 32, 20);
+B = fi(B, true, 32, 20);
+H = fi(H, true, 32, 20);
+Q = fi(Q, true, 32, 20);
+C = fi(C, true, 32, 20);
+
+
 
